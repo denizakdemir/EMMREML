@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Deniz Akdemir" />
+
+<meta name="date" content="2025-03-17" />
+
+<title>Introduction to EMMREML</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to EMMREML</h1>
+<h4 class="author">Deniz Akdemir</h4>
+<h4 class="date">2025-03-17</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The <strong>EMMREML</strong> package provides an improved mixed model
+solver that handles a variety of covariance structures for genetic data
+analysis. It is particularly useful in plant and animal breeding,
+quantitative genetics, and genome-wide association studies (GWAS).</p>
+<p>This vignette introduces the main functionality of the package and
+shows how to use it through practical examples.</p>
+</div>
+<div id="key-features" class="section level2">
+<h2>Key Features</h2>
+<p>The package provides several key functions:</p>
+<ol style="list-style-type: decimal">
+<li><code>emmreml</code>: Solves mixed models with known covariance
+structure using the ‘EMMA’ algorithm</li>
+<li><code>emmremlMultiKernel</code>: Fits models with multiple random
+components with known covariance structures</li>
+<li><code>emmremlMultivariate</code>: Solves multivariate Gaussian mixed
+models with known covariance structures</li>
+<li><code>gwas</code>: Performs genome-wide association studies with
+mixed models</li>
+</ol>
+<p>Additionally, the package includes functionality for:</p>
+<ul>
+<li>Computing and manipulating relationship/kinship matrices</li>
+<li>Visualizing results</li>
+<li>Managing marker data</li>
+</ul>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>You can install the released version of EMMREML from CRAN:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#install.packages(&quot;EMMREML&quot;)</span></span></code></pre></div>
+<p>Or the development version from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># install.packages(&quot;devtools&quot;)</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#devtools::install_github(&quot;denizakdemir/EMMREML&quot;)</span></span></code></pre></div>
+</div>
+<div id="basic-usage-mixed-models-with-known-covariance" class="section level2">
+<h2>Basic Usage: Mixed Models with Known Covariance</h2>
+<p>The core functionality of EMMREML is fitting mixed models with known
+covariance structures. Let’s start with a simple example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(EMMREML)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Loading required package: Matrix</span></span></code></pre></div>
+<div id="example-data" class="section level3">
+<h3>Example Data</h3>
+<p>First, let’s generate some example data for our demonstration:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Generate example data</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="co"># number of samples</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># Create fixed effects</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, <span class="fu">rnorm</span>(n))</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="fu">colnames</span>(X) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># Create a realistic kinship matrix</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>Z <span class="ot">&lt;-</span> <span class="fu">diag</span>(n)</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>K_raw <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n<span class="sc">*</span><span class="dv">20</span>), n, <span class="dv">20</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>K <span class="ot">&lt;-</span> <span class="fu">tcrossprod</span>(K_raw)</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="fu">diag</span>(K) <span class="ot">&lt;-</span> <span class="fu">diag</span>(K) <span class="sc">+</span> <span class="fl">1e-6</span>  <span class="co"># ensure positive definiteness</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>K <span class="ot">&lt;-</span> K <span class="sc">/</span> <span class="fu">mean</span>(<span class="fu">diag</span>(K))  <span class="co"># Scale K</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co"># Simulate data from the model</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>u <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(<span class="fu">chol</span>(K), <span class="fu">rnorm</span>(n)) <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="dv">2</span>)  <span class="co"># random effect with Var=2*K</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n)  <span class="co"># residual with Var=1</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> X[, <span class="dv">2</span>] <span class="sc">+</span> u <span class="sc">+</span> e</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co"># Create data frame</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y, <span class="at">x =</span> X[, <span class="dv">2</span>], <span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n)</span></code></pre></div>
+</div>
+<div id="fitting-a-mixed-model" class="section level3">
+<h3>Fitting a Mixed Model</h3>
+<p>We can fit a mixed model using the <code>emmreml</code> function:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Fit model</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">emmreml</span>(<span class="at">y =</span> df<span class="sc">$</span>y, </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                  <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, df<span class="sc">$</span>x),  <span class="co"># Intercept + x</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                  <span class="at">Z =</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(df)),  <span class="co"># Identity for observations</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                  <span class="at">K =</span> K)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Variance components:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Variance components:</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Genetic variance (Vu):&quot;</span>, result<span class="sc">$</span>Vu, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Genetic variance (Vu): 0.7811974</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Residual variance (Ve):&quot;</span>, result<span class="sc">$</span>Ve, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; Residual variance (Ve): 0.8963003</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Fixed effects:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; Fixed effects:</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="fu">names</span>(result<span class="sc">$</span>betahat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="fu">print</span>(result<span class="sc">$</span>betahat)</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; [1,] 9.848929</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; [2,] 2.128694</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; attr(,&quot;names&quot;)</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Intercept&quot; &quot;x&quot;</span></span></code></pre></div>
+</div>
+</div>
+<div id="multi-kernel-models" class="section level2">
+<h2>Multi-Kernel Models</h2>
+<p>The <code>emmremlMultiKernel</code> function allows you to fit models
+with multiple random components. This is useful when you have multiple
+sources of genetic effects or environmental factors that you want to
+model separately.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Create a second kinship matrix</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">456</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>K2_raw <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n<span class="sc">*</span><span class="dv">15</span>), n, <span class="dv">15</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>K2 <span class="ot">&lt;-</span> <span class="fu">tcrossprod</span>(K2_raw)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="fu">diag</span>(K2) <span class="ot">&lt;-</span> <span class="fu">diag</span>(K2) <span class="sc">+</span> <span class="fl">1e-6</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>K2 <span class="ot">&lt;-</span> K2 <span class="sc">/</span> <span class="fu">mean</span>(<span class="fu">diag</span>(K2))</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># Simulate new data with two random components</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>u1 <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(<span class="fu">chol</span>(K), <span class="fu">rnorm</span>(n)) <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="fl">1.5</span>)  <span class="co"># first random effect</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>u2 <span class="ot">&lt;-</span> <span class="fu">crossprod</span>(<span class="fu">chol</span>(K2), <span class="fu">rnorm</span>(n)) <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="fl">0.8</span>)  <span class="co"># second random effect</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n) <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="fl">0.7</span>)  <span class="co"># residual</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>y_mk <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> X[, <span class="dv">2</span>] <span class="sc">+</span> u1 <span class="sc">+</span> u2 <span class="sc">+</span> e</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Create data frame</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>df_mk <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y_mk, <span class="at">x =</span> X[, <span class="dv">2</span>], <span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co"># List of kernel matrices</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>K_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">K1 =</span> K, <span class="at">K2 =</span> K2)</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co"># Fit multi-kernel model</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>mk_result <span class="ot">&lt;-</span> <span class="fu">emmremlMultiKernel</span>(<span class="at">y =</span> df_mk<span class="sc">$</span>y,</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>                               <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, df_mk<span class="sc">$</span>x),</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>                               <span class="at">Z =</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(df_mk)),</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>                               <span class="at">K =</span> K_list)</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Variance components:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="fu">print</span>(mk_result<span class="sc">$</span>varcomp)</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Fixed effects:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="fu">names</span>(mk_result<span class="sc">$</span>betahat) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Intercept&quot;</span>, <span class="st">&quot;x&quot;</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="fu">print</span>(mk_result<span class="sc">$</span>betahat)</span></code></pre></div>
+</div>
+<div id="multivariate-models" class="section level2">
+<h2>Multivariate Models</h2>
+<p>EMMREML can also handle multivariate mixed models, where you analyze
+multiple response variables simultaneously using the
+<code>emmremlMultivariate</code> function:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Generate multivariate example data</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">3</span>  <span class="co"># number of traits</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Create covariance matrices</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>Vg <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="fl">0.75</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="dv">1</span>), p, p)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>Ve <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.15</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.5</span>), p, p)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co"># Simulate data</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="fl">0.5</span>), <span class="dv">2</span>, p)  <span class="co"># fixed effects for 3 traits</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>G <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n<span class="sc">*</span>p), n, p) <span class="sc">%*%</span> <span class="fu">chol</span>(Vg)  <span class="co"># random effects</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>E <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n<span class="sc">*</span>p), n, p) <span class="sc">%*%</span> <span class="fu">chol</span>(Ve)  <span class="co"># errors</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>Y <span class="ot">&lt;-</span> X <span class="sc">%*%</span> B <span class="sc">+</span> G <span class="sc">+</span> E</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co"># Create data frame</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>df_mv <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y1 =</span> Y[,<span class="dv">1</span>], <span class="at">y2 =</span> Y[,<span class="dv">2</span>], <span class="at">y3 =</span> Y[,<span class="dv">3</span>], <span class="at">x =</span> X[,<span class="dv">2</span>], <span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n)</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co"># Fit multivariate model</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>mv_result <span class="ot">&lt;-</span> <span class="fu">emmremlMultivariate</span>(<span class="at">formula =</span> <span class="fu">cbind</span>(y1, y2, y3) <span class="sc">~</span> x, </span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>                               <span class="at">random =</span> <span class="sc">~</span> id, </span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>                               <span class="at">data =</span> df_mv, </span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>                               <span class="at">K =</span> K)</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Genetic covariance matrix (Vg):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="fu">print</span>(mv_result<span class="sc">$</span>Vg)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Error covariance matrix (Ve):</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="fu">print</span>(mv_result<span class="sc">$</span>Ve)</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Fixed effects:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="fu">print</span>(mv_result<span class="sc">$</span>beta)</span></code></pre></div>
+</div>
+<div id="genome-wide-association-studies-gwas" class="section level2">
+<h2>Genome-Wide Association Studies (GWAS)</h2>
+<p>The package includes functionality for performing GWAS with mixed
+models, which helps control for population structure:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Generate GWAS example data</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">1000</span>  <span class="co"># number of markers</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>markers <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>), n<span class="sc">*</span>p, <span class="at">replace=</span><span class="cn">TRUE</span>), <span class="at">nrow=</span>n, <span class="at">ncol=</span>p)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">colnames</span>(markers) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;SNP&quot;</span>, <span class="dv">1</span><span class="sc">:</span>p)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    </span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co"># Select some causal variants</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>causal_idx <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">300</span>, <span class="dv">700</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, p)</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>betas[causal_idx] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.4</span>, <span class="fl">0.3</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    </span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co"># Create genetic values from markers</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>g <span class="ot">&lt;-</span> markers <span class="sc">%*%</span> betas</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    </span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co"># Create phenotype for GWAS</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>y_gwas <span class="ot">&lt;-</span> <span class="dv">10</span> <span class="sc">+</span> g <span class="sc">+</span> u <span class="sc">+</span> e</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>df_gwas <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y_gwas, <span class="at">x =</span> X[, <span class="dv">2</span>], <span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n)</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co"># Run GWAS</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>gwas_result <span class="ot">&lt;-</span> <span class="fu">gwas</span>(</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  <span class="at">formula =</span> y <span class="sc">~</span> x, </span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>  <span class="at">random =</span> <span class="sc">~</span> id, </span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>  <span class="at">data =</span> df_gwas,</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>  <span class="at">markers =</span> markers,</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>  <span class="at">K =</span> K,</span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>  <span class="at">accelerated =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>)</span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co"># Display top results</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="fu">head</span>(gwas_result<span class="sc">$</span>results[<span class="fu">order</span>(gwas_result<span class="sc">$</span>results<span class="sc">$</span>p_value),], <span class="dv">10</span>)</span></code></pre></div>
+</div>
+<div id="working-with-kinship-matrices" class="section level2">
+<h2>Working with Kinship Matrices</h2>
+<p>The <code>kinship</code> module provides functions for processing
+marker data and calculating different types of kinship matrices:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Calculate a VanRaden kinship matrix</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>K_vr <span class="ot">&lt;-</span> <span class="fu">calculate_kinship</span>(markers, <span class="at">method =</span> <span class="st">&quot;vanraden1&quot;</span>, <span class="at">coding =</span> <span class="st">&quot;012&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co"># Ensure positive definiteness</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="fu">diag</span>(K_vr) <span class="ot">&lt;-</span> <span class="fu">diag</span>(K_vr) <span class="sc">+</span> <span class="fl">1e-4</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># Use this kinship matrix in a mixed model</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">emmreml</span>(<span class="at">y =</span> df<span class="sc">$</span>y, </span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>              <span class="at">X =</span> <span class="fu">cbind</span>(<span class="dv">1</span>, df<span class="sc">$</span>x),</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>              <span class="at">Z =</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(df)),</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>              <span class="at">K =</span> K_vr)</span></code></pre></div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>The EMMREML package provides a comprehensive set of tools for fitting
+mixed models with known covariance structures. It is particularly useful
+for genetic data analysis, including GWAS and multivariate trait
+analysis. The package offers optimized implementations for improved
+performance, especially when dealing with identity kinship matrices.</p>
+<p>For more detailed information, refer to the function documentation
+using the <code>?</code> operator, e.g., <code>?emmreml</code>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

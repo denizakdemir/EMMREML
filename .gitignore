@@ -1,0 +1,18 @@
+# R build artifacts
+*.Rcheck/
+*.tar.gz
+*.Rhistory
+*.RData
+*.Ruserdata
+
+# Backup and experimental files
+backup/
+
+# Installed package files
+inst/doc/
+
+# Data and credentials
+data/
+
+# OS
+.DS_Store

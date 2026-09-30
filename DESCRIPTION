@@ -1,0 +1,42 @@
+Package: EMMREML
+Type: Package
+Version: 5.2
+Date: 2026-09-29
+Title: Fitting Mixed Models with Known Covariance Structures and GWAS
+Author: Deniz Akdemir, Okeke Uche Godfrey
+Maintainer: Deniz Akdemir <deniz.akdemir.work@gmail.com>
+Description: An improved mixed model solver that handles a variety of covariance 
+    structures. The main functions are 'emmreml', 'emmremlMultiKernel', and 
+    'emmremlMultivariate'. The 'emmreml' function solves mixed models with 
+    known covariance structure using the 'EMMA' algorithm. 'emmremlMultiKernel' 
+    allows for fitting models with multiple random components with known covariance 
+    structures. The 'emmremlMultivariate' function solves multivariate Gaussian 
+    mixed models with known covariance structures using the 'ECM' algorithm. The 
+    package now offers both the original matrix interface (fully backward compatible
+    with v3.1) and a modern formula interface. The 'emmremlMultivariate' function
+    restores 'Gpred' and all test outputs from v3.1 while fixing ECM convergence.
+    The new 'gwas' function provides genome-wide association studies with mixed
+    models, including an accelerated algorithm and visualization options.
+Depends: 
+    R (>= 3.5.0),
+    Matrix,
+    stats
+Imports: 
+    methods
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat,
+    ggplot2,
+    MASS,
+    data.table,
+    viridis,
+    impute
+License: GPL-2
+NeedsCompilation: no
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Additional_repositories: https://bioconductor.org/packages/release/bioc
+VignetteBuilder: knitr
+URL: https://github.com/dakdemir/EMMREML
+BugReports: https://github.com/dakdemir/EMMREML/issues

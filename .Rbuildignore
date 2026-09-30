@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.md$
+^\.github$
+^doc$
+^Meta$
+^vignettes/.*\.html$
+^vignettes/.*\.R$
+^backup$
+^test_.*\.R$
+^emmreml_.*\.md$
+^MD5$
+^EMMREML_.*\.tar\.gz$

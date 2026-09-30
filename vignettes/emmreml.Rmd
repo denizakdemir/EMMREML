@@ -1,0 +1,246 @@
+---
+title: "Introduction to EMMREML"
+author: "Deniz Akdemir"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to EMMREML}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+The **EMMREML** package provides an improved mixed model solver that handles a variety of covariance structures for genetic data analysis. It is particularly useful in plant and animal breeding, quantitative genetics, and genome-wide association studies (GWAS).
+
+This vignette introduces the main functionality of the package and shows how to use it through practical examples.
+
+## Key Features
+
+The package provides several key functions:
+
+1. `emmreml`: Solves mixed models with known covariance structure using the 'EMMA' algorithm
+2. `emmremlMultiKernel`: Fits models with multiple random components with known covariance structures
+3. `emmremlMultivariate`: Solves multivariate Gaussian mixed models with known covariance structures
+4. `gwas`: Performs genome-wide association studies with mixed models
+
+Additionally, the package includes functionality for:
+
+- Computing and manipulating relationship/kinship matrices
+- Visualizing results
+- Managing marker data
+
+## Installation
+
+You can install the released version of EMMREML from CRAN:
+
+```{r, eval = TRUE}
+#install.packages("EMMREML")
+```
+
+Or the development version from GitHub:
+
+```{r, eval = TRUE}
+# install.packages("devtools")
+#devtools::install_github("denizakdemir/EMMREML")
+```
+
+## Basic Usage: Mixed Models with Known Covariance
+
+The core functionality of EMMREML is fitting mixed models with known covariance structures. Let's start with a simple example:
+
+```{r setup}
+library(EMMREML)
+```
+
+### Example Data
+
+First, let's generate some example data for our demonstration:
+
+```{r example-data}
+# Generate example data
+set.seed(123)
+n <- 100 # number of samples
+
+# Create fixed effects
+X <- cbind(1, rnorm(n))
+colnames(X) <- c("intercept", "x")
+
+# Create a realistic kinship matrix
+Z <- diag(n)
+K_raw <- matrix(rnorm(n*20), n, 20)
+K <- tcrossprod(K_raw)
+diag(K) <- diag(K) + 1e-6  # ensure positive definiteness
+K <- K / mean(diag(K))  # Scale K
+
+# Simulate data from the model
+u <- crossprod(chol(K), rnorm(n)) * sqrt(2)  # random effect with Var=2*K
+e <- rnorm(n)  # residual with Var=1
+y <- 10 + 2 * X[, 2] + u + e
+
+# Create data frame
+df <- data.frame(y = y, x = X[, 2], id = 1:n)
+```
+
+### Fitting a Mixed Model
+
+We can fit a mixed model using the `emmreml` function:
+
+```{r basic-model}
+# Fit model
+result <- emmreml(y = df$y, 
+                  X = cbind(1, df$x),  # Intercept + x
+                  Z = diag(nrow(df)),  # Identity for observations
+                  K = K)
+
+# Display results
+cat("Variance components:\n")
+cat("Genetic variance (Vu):", result$Vu, "\n")
+cat("Residual variance (Ve):", result$Ve, "\n")
+cat("\nFixed effects:\n")
+names(result$betahat) <- c("Intercept", "x")
+print(result$betahat)
+```
+
+## Multi-Kernel Models
+
+The `emmremlMultiKernel` function allows you to fit models with multiple random components. This is useful when you have multiple sources of genetic effects or environmental factors that you want to model separately.
+
+```{r multi-kernel, eval=FALSE}
+# Create a second kinship matrix
+set.seed(456)
+K2_raw <- matrix(rnorm(n*15), n, 15)
+K2 <- tcrossprod(K2_raw)
+diag(K2) <- diag(K2) + 1e-6
+K2 <- K2 / mean(diag(K2))
+
+# Simulate new data with two random components
+u1 <- crossprod(chol(K), rnorm(n)) * sqrt(1.5)  # first random effect
+u2 <- crossprod(chol(K2), rnorm(n)) * sqrt(0.8)  # second random effect
+e <- rnorm(n) * sqrt(0.7)  # residual
+y_mk <- 10 + 2 * X[, 2] + u1 + u2 + e
+
+# Create data frame
+df_mk <- data.frame(y = y_mk, x = X[, 2], id = 1:n)
+
+# List of kernel matrices
+K_list <- list(K1 = K, K2 = K2)
+
+# Fit multi-kernel model
+mk_result <- emmremlMultiKernel(y = df_mk$y,
+                               X = cbind(1, df_mk$x),
+                               Z = diag(nrow(df_mk)),
+                               K = K_list)
+
+# Display results
+cat("Variance components:\n")
+print(mk_result$varcomp)
+cat("\nFixed effects:\n")
+names(mk_result$betahat) <- c("Intercept", "x")
+print(mk_result$betahat)
+```
+
+## Multivariate Models
+
+EMMREML can also handle multivariate mixed models, where you analyze multiple response variables simultaneously using the `emmremlMultivariate` function:
+
+```{r multivariate, eval=FALSE}
+# Generate multivariate example data
+p <- 3  # number of traits
+
+# Create covariance matrices
+Vg <- matrix(c(2, 1, 0.5, 1, 1.5, 0.75, 0.5, 0.75, 1), p, p)
+Ve <- matrix(c(1, 0.2, 0.1, 0.2, 0.8, 0.15, 0.1, 0.15, 0.5), p, p)
+
+# Simulate data
+B <- matrix(c(10, 2, 5, 1, 3, 0.5), 2, p)  # fixed effects for 3 traits
+G <- matrix(rnorm(n*p), n, p) %*% chol(Vg)  # random effects
+E <- matrix(rnorm(n*p), n, p) %*% chol(Ve)  # errors
+Y <- X %*% B + G + E
+
+# Create data frame
+df_mv <- data.frame(y1 = Y[,1], y2 = Y[,2], y3 = Y[,3], x = X[,2], id = 1:n)
+
+# Fit multivariate model
+mv_result <- emmremlMultivariate(formula = cbind(y1, y2, y3) ~ x, 
+                               random = ~ id, 
+                               data = df_mv, 
+                               K = K)
+
+# Display results
+cat("Genetic covariance matrix (Vg):\n")
+print(mv_result$Vg)
+cat("\nError covariance matrix (Ve):\n")
+print(mv_result$Ve)
+cat("\nFixed effects:\n")
+print(mv_result$beta)
+```
+
+## Genome-Wide Association Studies (GWAS)
+
+The package includes functionality for performing GWAS with mixed models, which helps control for population structure:
+
+```{r gwas, eval=FALSE}
+# Generate GWAS example data
+p <- 1000  # number of markers
+markers <- matrix(sample(c(0, 1, 2), n*p, replace=TRUE), nrow=n, ncol=p)
+colnames(markers) <- paste0("SNP", 1:p)
+    
+# Select some causal variants
+causal_idx <- c(100, 300, 700)
+betas <- rep(0, p)
+betas[causal_idx] <- c(0.5, 0.4, 0.3)
+    
+# Create genetic values from markers
+g <- markers %*% betas
+    
+# Create phenotype for GWAS
+y_gwas <- 10 + g + u + e
+df_gwas <- data.frame(y = y_gwas, x = X[, 2], id = 1:n)
+
+# Run GWAS
+gwas_result <- gwas(
+  formula = y ~ x, 
+  random = ~ id, 
+  data = df_gwas,
+  markers = markers,
+  K = K,
+  accelerated = TRUE
+)
+
+# Display top results
+head(gwas_result$results[order(gwas_result$results$p_value),], 10)
+```
+
+## Working with Kinship Matrices
+
+The `kinship` module provides functions for processing marker data and calculating different types of kinship matrices:
+
+```{r kinship, eval=FALSE}
+# Calculate a VanRaden kinship matrix
+K_vr <- calculate_kinship(markers, method = "vanraden1", coding = "012")
+
+# Ensure positive definiteness
+diag(K_vr) <- diag(K_vr) + 1e-4
+
+# Use this kinship matrix in a mixed model
+mod <- emmreml(y = df$y, 
+              X = cbind(1, df$x),
+              Z = diag(nrow(df)),
+              K = K_vr)
+```
+
+## Conclusion
+
+The EMMREML package provides a comprehensive set of tools for fitting mixed models with known covariance structures. It is particularly useful for genetic data analysis, including GWAS and multivariate trait analysis. The package offers optimized implementations for improved performance, especially when dealing with identity kinship matrices.
+
+For more detailed information, refer to the function documentation using the `?` operator, e.g., `?emmreml`.

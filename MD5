@@ -1,0 +1,9 @@
+47e35e2b571efc1245bbcd3bcbc51fb4 *DESCRIPTION
+f815a19096fa169b579c9be25699ba0d *NAMESPACE
+f8db9dd7f53333cd1182e6a5892eeb9a *R/emmreml.R
+517e9d6ed3de80442870a35094850f0a *R/emmremlMultiKernel.R
+6e332c6aac58b1ecbee86ec91d42ce46 *R/emmremlMultivariate.R
+bf0202487f996086badbeab16b460a5b *man/EMMREML-package.Rd
+118d065a8a251245bffd076d7bd47eb1 *man/emmreml.Rd
+abaf9dc7cf321380dbabd66e8dba2500 *man/emmremlMultiKernel.Rd
+97f3dbbcfe1b0169c7fbb264e51cfaa1 *man/emmremlMultivariate.Rd
